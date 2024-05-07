@@ -1,0 +1,1 @@
+fn(axum::extract::State<sqlx::Pool<sqlx::Sqlite>>) -> impl std::future::Future<Output = std::result::Result<axum::Json<std::vec::Vec<SerialMeal>>, axum_error::Error>> {list}
