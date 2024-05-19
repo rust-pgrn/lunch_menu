@@ -30,6 +30,7 @@ impl SerialMeal {
         }
     }
 }
+#[derive(Serialize, Deserialize)]
 pub struct Student {
     pub id: i64,
     pub name: String,

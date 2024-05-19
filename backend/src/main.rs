@@ -1,6 +1,10 @@
 mod models;
 mod serialize_date;
-use axum::{extract::State, routing::get, Json, Router};
+use axum::{
+    extract::{Path, State},
+    routing::{delete, get, post},
+    Form, Json, Router,
+};
 use models::*;
 //use axum_error::Error;
 //use axum_error::Result;
@@ -24,6 +28,8 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(list))
         .route("/create", get(create))
+        .route("/delete/:id", get(delete_meal))
+        .route("/update", get(add_student))
         .with_state(pool)
         .layer(CorsLayer::very_permissive());
     let address = SocketAddr::from(([0, 0, 0, 0], 8000));
@@ -59,4 +65,29 @@ async fn create(State(pool): State<SqlitePool>) -> Result<String, ResponseError>
     .map_err(|_| ResponseError::InternalServerError)?;
     println!("added meal");
     Ok(format!("Successfully added meal"))
+}
+#[debug_handler]
+async fn add_student(
+    State(pool): State<SqlitePool>,
+    Form(student): Form<Student>,
+) -> Result<String, ResponseError> {
+    sqlx::query!(
+        "UPDATE menu SET students = ? WHERE id = ?",
+        student.name,
+        student.id
+    )
+    .execute(&pool)
+    .await
+    .map_err(|_| ResponseError::InternalServerError)?;
+    Ok(format!("Successfully added student"))
+}
+async fn delete_meal(
+    State(pool): State<SqlitePool>,
+    Path(id): Path<i64>,
+) -> Result<String, ResponseError> {
+    sqlx::query!("DELETE FROM menu WHERE id = ?", id)
+        .execute(&pool)
+        .await
+        .map_err(|_| ResponseError::InternalServerError)?;
+    Ok(format!("Successully deleted meal"))
 }
